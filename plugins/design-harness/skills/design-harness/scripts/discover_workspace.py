@@ -59,8 +59,11 @@ def record_workspace(root, workspace):
 def candidates_by_name(root):
     root = Path(root)
     found = []
+    root_depth = len(root.parts)
     for path in sorted(root.rglob(WORKSPACE_DIR_NAME)):
         relative_parts = path.relative_to(root).parts
+        if len(relative_parts) > MAX_SCAN_DEPTH:
+            continue
         if any(part in SCAN_SKIP_DIRS for part in relative_parts[:-1]):
             continue
         if path.is_dir() and looks_like_workspace(path):
