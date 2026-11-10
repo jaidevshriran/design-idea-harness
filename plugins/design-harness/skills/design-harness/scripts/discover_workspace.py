@@ -7,6 +7,7 @@ CONFIG_RELPATH = Path(".design-harness") / "config.json"
 DEFAULT_LOCATION = Path("docs") / WORKSPACE_DIR_NAME
 SCAN_SKIP_DIRS = {".git", ".claude", ".design-harness", "node_modules",
                   "__pycache__", ".venv", "venv"}
+MAX_SCAN_DEPTH = 8
 REQUIRED_DIRS = ("sources", "ideas", "output")
 REQUIRED_FILES = ("logs.md",)
 
@@ -61,6 +62,8 @@ def candidates_by_name(root):
     found = []
     for path in sorted(root.rglob(WORKSPACE_DIR_NAME)):
         relative_parts = path.relative_to(root).parts
+        if len(relative_parts) > MAX_SCAN_DEPTH:
+            continue
         if any(part in SCAN_SKIP_DIRS for part in relative_parts[:-1]):
             continue
         if path.is_dir() and looks_like_workspace(path):
