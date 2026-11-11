@@ -12,6 +12,23 @@ _LINK_TEXT = re.compile(r"\[([^\]]*)\]\([^)]*\)")
 _SUMMARY_LIMIT = 280
 
 
+def safe_resolve(base, target, must_be_under=None):
+    """安全地解析相对于base的路径，可选地验证结果在must_be_under内。
+    
+    用于防止 markdown 链接中的 .. 路径穿越攻击。
+    """
+    base = Path(base).resolve()
+    target_path = Path(target)
+    resolved = (base / target_path).resolve()
+    if must_be_under is not None:
+        must_be_under = Path(must_be_under).resolve()
+        try:
+            resolved.relative_to(must_be_under)
+        except ValueError:
+            return None
+    return resolved
+
+
 def parse_frontmatter(text):
     match = _FRONTMATTER.match(text)
     if not match:
