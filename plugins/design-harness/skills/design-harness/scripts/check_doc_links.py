@@ -6,12 +6,21 @@ from workspace import local_md_targets
 
 
 def check_links(docs_root):
-    docs_root = Path(docs_root)
+    docs_root = Path(docs_root).resolve()
     problems = []
     for md in sorted(docs_root.rglob("*.md")):
         for lineno, line in enumerate(md.read_text(encoding="utf-8").splitlines(), 1):
             for target in local_md_targets(line):
-                if not (md.parent / target).resolve().exists():
+                resolved = (md.parent / target).resolve()
+                # 安全检查：resolve 后的路径必须在 docs_root 内
+                try:
+                    resolved.relative_to(docs_root)
+                except ValueError:
+                    problems.append(
+                        f"{md.relative_to(docs_root)}:{lineno} -> {target} "
+                        f"(resolves outside workspace)")
+                    continue
+                if not resolved.exists():
                     problems.append(f"{md.relative_to(docs_root)}:{lineno} -> {target}")
     return problems
 
