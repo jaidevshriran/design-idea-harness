@@ -248,9 +248,15 @@ def main(argv):
             print("usage: build_canvas.py [workspace] [-o outdir|out.html] "
                   "[--css style.css] [--title 'Page title']")
             return 1
-    outdir = argv[argv.index("-o") + 1] if "-o" in argv else "/tmp/rds-canvas"
-    css = argv[argv.index("--css") + 1] if "--css" in argv else None
-    title = argv[argv.index("--title") + 1] if "--title" in argv else None
+    def _arg_value(flag, default=None):
+        try:
+            i = argv.index(flag)
+            return argv[i + 1] if i + 1 < len(argv) else default
+        except ValueError:
+            return default
+    outdir = _arg_value("-o", "/tmp/rds-canvas")
+    css = _arg_value("--css")
+    title = _arg_value("--title")
     build(workspace, outdir, css, title)
     return 0
 
