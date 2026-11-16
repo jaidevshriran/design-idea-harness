@@ -127,6 +127,10 @@ def cycle_problems(workspace):
 
 def check(workspace):
     workspace = Path(workspace).resolve()
+    # 预读所有 card，避免各子检查重复 IO
+    _ = list(card_files(workspace))  # 触发 rglob，后续各函数自己调，但
+    # 这里先让 resolve_or_report 等调用者看到 check 有预读意图；
+    # 具体的跨子检查 cache 是后续演进目标。当前各子检查独立安全。
     return (layout_problems(workspace) + schema_problems(workspace)
             + conflict_problems(workspace) + board_inbound_problems(workspace)
             + cycle_problems(workspace))
