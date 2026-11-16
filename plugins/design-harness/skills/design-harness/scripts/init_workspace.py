@@ -39,18 +39,24 @@ SKELETON = {
 }
 
 
-def init(workspace):
+def init(workspace, force=False):
     workspace = Path(workspace)
-    created = []
+    created, skipped, overwritten = [], [], []
     for rel, content in SKELETON.items():
         target = workspace / rel
-        if target.exists():
-            continue
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(content, encoding="utf-8")
-        created.append(rel)
+        if target.exists():
+            if force:
+                target.write_text(content, encoding="utf-8")
+                overwritten.append(rel)
+            else:
+                skipped.append(rel)
+                continue
+        else:
+            target.write_text(content, encoding="utf-8")
+            created.append(rel)
     (workspace / "ideas" / "archive").mkdir(parents=True, exist_ok=True)
-    return created
+    return created, skipped, overwritten
 
 
 def main(argv):
