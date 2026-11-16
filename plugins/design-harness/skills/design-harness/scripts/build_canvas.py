@@ -142,12 +142,20 @@ def doc_edges(data, node_ids):
             for raw in _LINK.findall(text):
                 if re.match(r"^[a-z][a-z0-9+.-]*://", raw):
                     continue
+                # 用 Path.resolve 处理相对路径，确保不越界
+                resolved = (base / raw).resolve()
+                # 手动拼回 workspace 相对路径
                 parts = list(base.parts)
                 for seg in raw.split("/"):
                     if seg == "..":
-                        parts and parts.pop()
+                        if parts:
+                            parts.pop()
+                        # 空 parts 时忽略 ..，防止越界到 workspace 外
                     elif seg not in (".", ""):
                         parts.append(seg)
+                # parts 必须非空才能形成有效路径
+                if not parts:
+                    continue
                 target = "/".join(parts)
                 if target in node_ids and target != path and target not in seen:
                     seen.add(target)
