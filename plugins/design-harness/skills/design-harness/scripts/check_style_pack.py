@@ -286,8 +286,12 @@ def check(pack_root):
             f"{slug}/design.md", entries_by_slug[slug], design_text)
         canvas_css = pack / slug / "canvas.css"
         if canvas_css.is_file():
-            problems += check_canvas_css(
-                f"{slug}/canvas.css", canvas_css.read_text(encoding="utf-8"))
+            try:
+                css_text = canvas_css.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                problems.append(f"{slug}/canvas.css: cannot decode as UTF-8")
+            else:
+                problems += check_canvas_css(f"{slug}/canvas.css", css_text)
     return problems
 
 
